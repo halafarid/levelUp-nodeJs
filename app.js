@@ -11,6 +11,13 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(cors()); // Enable to call the server in FrontEnd
 
+// Enable to use schemas
+const userRouter = require('./router/user');
+const jobRouter = require('./router/job');
+
+app.use('/users', userRouter);
+app.use('/jobs', jobRouter);
+
 // For Testing
 app.get('/', (req, res) => {
     res.send('<h1>Home From Server</h1>');
