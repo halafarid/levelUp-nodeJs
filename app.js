@@ -1,6 +1,15 @@
 const port = process.env.PORT || 3000;
 const express = require('express');
 const app = express();
+const cors = require('cors');
+
+require('dotenv').config(); // To use .env file
+require('./db'); // Connect to DB
+require('express-async-errors'); // Handle try..catch
+
+app.use(express.json());
+app.use(express.urlencoded());
+app.use(cors()); // Enable to call the server in FrontEnd
 
 // For Testing
 app.get('/', (req, res) => {
