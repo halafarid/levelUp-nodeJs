@@ -13,14 +13,16 @@ app.use(cors()); // Enable to call the server in FrontEnd
 
 // Enable to use schemas
 const userRouter = require('./router/user');
-const jobRouter = require('./router/job');
 const courseRouter = require('./router/course');
 const categoryRouter = require('./router/category');
+const levelRouter = require('./router/level');
+const searchRouter = require('./router/search');
 
 app.use('/users', userRouter);
-app.use('/jobs', jobRouter);
 app.use('/courses', courseRouter);
 app.use('/categories', categoryRouter);
+app.use('/levels', levelRouter);
+app.use('/search', searchRouter);
 
 // For Testing
 app.get('/', (req, res) => {
