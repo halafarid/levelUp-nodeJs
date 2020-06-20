@@ -4,11 +4,14 @@ const _ = require('lodash');
 const categorySchema = new mongoose.Schema({
     title: {
         type: String,
-        maxlength: 50
+        maxlength: 50,
+        required: true
     }
 }, {
     timestamps: true,
+
     toJSON: {
+        virtuals: true,
         transform: doc => {
             return _.pick(doc, ['_id', 'title', 'course' ]);
         }

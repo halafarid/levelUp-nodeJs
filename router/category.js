@@ -3,12 +3,20 @@ const express = require('express');
 const router = express.Router();
 const authenticationMiddleware = require('../middlewares/authentication');
 
-router.get('/', async (req, res, next) => {
-    const categories = await Category.find().populate('course');
+router.get('/', authenticationMiddleware, async (req, res, next) => {
+    const categories = await Category.find();
     res.json(categories);
 });
 
-router.post('/', async (req, res, next) => {
+router.get('/:id', authenticationMiddleware, async (req, res, next) => {
+    const category = await Category.findById(req.params.id).populate({
+        path: 'course',
+        select: '_id title duration payment levelId'
+    });
+    res.json(category);
+});
+
+router.post('/', authenticationMiddleware, async (req, res, next) => {
     const { title } = req.body;
     const category = new Category ({ title });
 
@@ -16,15 +24,14 @@ router.post('/', async (req, res, next) => {
     res.json(category);
 });
 
-// router.patch('/:id', async (req, res, next) => {
-//     const { id } = req.params;
-//     const { courseId, title } = req.body;
-
-//     const category = await Category.findByIdAndUpdate(id,
-//         { courseId, title },
-//         { new: true, omitUndefined: true, runValidators: true }
-//     );
-//     res.json(category);
-// });
+router.patch('/:id', authenticationMiddleware, async (req, res, next) => {
+    const { id } = req.params;
+    const { title } = req.body;
+    const category = await Category.findByIdAndUpdate(id,
+        { title },
+        { new: true, omitUndefined: true, runValidators: true }
+    );
+    res.json(category);
+});
 
 module.exports = router;
