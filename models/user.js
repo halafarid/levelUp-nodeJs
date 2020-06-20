@@ -28,23 +28,37 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    job: {
+        title: {
+            type: String,
+            maxlength: 50
+        },
+        description: {
+            type: String,
+            maxlength: 256
+        }
+    },
     following: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    }],
+    enrolledCourses: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Course',
     }]
 }, {
     timestamps: true,
     toJSON: {
         transform: doc => {
-            return _.pick(doc, ['_id', 'fullName', 'email', 'userType', 'following', 'job']);
+            return _.pick(doc, ['_id', 'fullName', 'email', 'userType', 'following', 'job', 'ownCourses', 'enrolledCourses']);
         }
     },
 });
 
-userSchema.virtual('job', {
-    ref: 'Job',
+userSchema.virtual('ownCourses', {
+    ref: 'Course',
     localField: '_id',
-    foreignField: 'userId'
+    foreignField: 'instructorId'
 });
 
 sign({userId: ''}, jwtSecret)
