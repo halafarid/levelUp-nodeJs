@@ -1,15 +1,11 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
-const bcrypt = require('bcrypt');
-const CustomError = require('../helpers/customError');
-
-const util = require('util');
-const jwt = require('jsonwebtoken');
-const jwtSecret = process.env.JWT_KEY_SECRET;
-const sign = util.promisify(jwt.sign);
-const verify = util.promisify(jwt.verify);
 
 const courseSchema = new mongoose.Schema({
+    instructorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
     title: {
         type: String,
         required: true
@@ -32,13 +28,33 @@ const courseSchema = new mongoose.Schema({
     },
     categoryId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category'
-    }
+        ref: 'Category',
+        required: true
+    },
+    levelId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Level',
+        required: true
+    },
+    materials: [
+        {
+            title: {
+                type: String,
+                required: true,
+                maxlength: 50
+            },
+            link: {
+                type: String,
+                required: true
+            }
+        }
+    ],
+    reviews: []
 }, {
     timestamps: true,
     toJSON: {
         transform: doc => {
-            return _.pick(doc, ['_id', 'title', 'description', 'duration', 'categoryId' ]);
+            return _.pick(doc, ['_id', 'title', 'description', 'duration', 'payment', 'features', 'categoryId', 'levelId', 'materials', 'reviews', 'instructorId' ]);
         }
     },
 });
