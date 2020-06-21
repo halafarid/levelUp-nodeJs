@@ -134,7 +134,10 @@ router.get('/profile/:id', authenticationMiddleware, async (req, res, next) => {
 });
 
 router.get('/profile', authenticationMiddleware, async (req, res, next) => {
-    const currentUser = await User.findById(req.user._id);
+    const currentUser = await User.findById(req.user._id).populate({
+        path: 'enrolledCourses',
+        select: '_id title duration payment'
+    });
     res.send(currentUser);
 });
 
@@ -171,7 +174,10 @@ router.post('/payments/:cid', authenticationMiddleware, async (req, res, next) =
 });
 
 router.get('/wishlist', authenticationMiddleware, async (req, res, next) => {
-    const wishlist = await User.findById(req.user._id).select('wishlist');
+    const wishlist = await User.findById(req.user._id).select('wishlist').populate({
+        path: 'wishlist',
+        select: '_id title duration payment instructorId'
+    });
     res.send(wishlist);
 });
 
