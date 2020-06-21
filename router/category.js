@@ -34,4 +34,10 @@ router.patch('/:id', authenticationMiddleware, async (req, res, next) => {
     res.json(category);
 });
 
+router.delete('/:id', authenticationMiddleware, async (req, res, next) => {
+    const { id } = req.params;
+    var category = await Category.findOneAndDelete(id);
+    res.json(category);
+});
+
 module.exports = router;

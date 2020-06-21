@@ -34,7 +34,7 @@ router.get('/free',
         const q = req.query;
         const pageNo = parseInt(q.pageNo);
         const size = parseInt(q.size);
-        const courses = await Course.find({ payment: 0 }).skip(size * (pageNo - 1)).limit(size).select('_id title duration payment users').populate('categoryId').populate('levelId');
+        const courses = await Course.find({ payment: 0 }).skip(size * (pageNo - 1)).limit(size).select('_id title duration materials materials').populate('categoryId').populate('levelId');
         res.json(courses);
     }
 );
@@ -49,7 +49,7 @@ router.get('/paid',
         const q = req.query;
         const pageNo = parseInt(q.pageNo);
         const size = parseInt(q.size);
-        const courses = await Course.find({ payment: { $gt: 0 } }).skip(size * (pageNo - 1)).limit(size).select('_id title duration payment').populate('categoryId').populate('levelId');
+        const courses = await Course.find({ payment: { $gt: 0 } }).skip(size * (pageNo - 1)).limit(size).select('_id title duration payment materials').populate('categoryId').populate('levelId');
         res.json(courses);
     }
 );
@@ -103,5 +103,12 @@ router.post('/:id/reviews', authenticationMiddleware, async (req, res, next) => 
     await Course.updateOne( {userId: req.user._id},  { $push: { reviews: { userId, title, rating} } });
     res.json(course);
 });
+
+router.get('/:id/materials', authenticationMiddleware, async (req, res, next) => {
+    const { id } = req.params;
+    const course = await Course.findById(id);
+    res.json(course.materials);
+});
+
 
 module.exports = router;

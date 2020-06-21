@@ -88,7 +88,7 @@ router.get('/profile/free',
 
         const currentUser = await User.findById(req.user._id).populate({
             path: 'ownFreeCourses',
-            select: '_id title duration payment levelId',
+            select: '_id title duration levelId',
             match: { payment: 0 },
             options: {
                 skip: size * (pageNo - 1),
@@ -108,7 +108,7 @@ router.get('/profile/paid',
 
         const currentUser = await User.findById(req.user._id).populate({
             path: 'ownPaidCourses',
-            select: '_id title duration payment levelId',
+            select: '_id title duration payment materials',
             match: { payment: { $gt: 0 } },
             options: {
                 skip: size * (pageNo - 1),
@@ -123,7 +123,7 @@ router.get('/profile/:id', authenticationMiddleware, async (req, res, next) => {
     const user = await User.findById(req.params.id)
     .populate({
         path: 'ownFreeCourses',
-        select: '_id title duration payment',
+        select: '_id title duration payment materials',
         match: { payment: 0 }
     }).populate({
         path: 'ownPaidCourses',
@@ -136,7 +136,7 @@ router.get('/profile/:id', authenticationMiddleware, async (req, res, next) => {
 router.get('/profile', authenticationMiddleware, async (req, res, next) => {
     const currentUser = await User.findById(req.user._id).populate({
         path: 'enrolledCourses',
-        select: '_id title duration payment'
+        select: '_id title duration payment materials'
     });
     res.send(currentUser);
 });
