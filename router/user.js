@@ -88,11 +88,15 @@ router.get('/profile/free',
 
         const currentUser = await User.findById(req.user._id).populate({
             path: 'ownFreeCourses',
-            select: '_id title duration levelId',
+            select: '_id title duration levelId materials',
             match: { payment: 0 },
             options: {
                 skip: size * (pageNo - 1),
                 limit: size
+            },
+            populate: {
+                path: 'levelId',
+                model: 'Level'
             }
         });
         res.send(currentUser.ownFreeCourses);
@@ -113,6 +117,10 @@ router.get('/profile/paid',
             options: {
                 skip: size * (pageNo - 1),
                 limit: size
+            },
+            populate: {
+                path: 'levelId',
+                model: 'Level'
             }
         });
         res.send(currentUser.ownPaidCourses);
@@ -123,7 +131,7 @@ router.get('/profile/:id', authenticationMiddleware, async (req, res, next) => {
     const user = await User.findById(req.params.id)
     .populate({
         path: 'ownFreeCourses',
-        select: '_id title duration payment materials',
+        select: '_id title duration payment materials levelId',
         match: { payment: 0 }
     }).populate({
         path: 'ownPaidCourses',
@@ -136,7 +144,11 @@ router.get('/profile/:id', authenticationMiddleware, async (req, res, next) => {
 router.get('/profile', authenticationMiddleware, async (req, res, next) => {
     const currentUser = await User.findById(req.user._id).populate({
         path: 'enrolledCourses',
-        select: '_id title duration payment materials'
+        select: '_id title duration payment materials levelId',
+        populate: {
+            path: 'levelId',
+            model: 'Level'
+        }
     });
     res.send(currentUser);
 });

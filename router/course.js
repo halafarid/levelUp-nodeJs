@@ -34,7 +34,7 @@ router.get('/free',
         const q = req.query;
         const pageNo = parseInt(q.pageNo);
         const size = parseInt(q.size);
-        const courses = await Course.find({ payment: 0 }).skip(size * (pageNo - 1)).limit(size).select('_id title duration materials materials').populate('categoryId').populate('levelId');
+        const courses = await Course.find({ payment: 0 }).skip(size * (pageNo - 1)).limit(size).select('_id title duration materials').populate('categoryId').populate('levelId');
         res.json(courses);
     }
 );
