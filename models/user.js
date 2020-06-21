@@ -44,18 +44,28 @@ const userSchema = new mongoose.Schema({
     }],
     enrolledCourses: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course',
+        ref: 'Course'
+    }],
+    wishlist: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Course'
     }]
 }, {
     timestamps: true,
     toJSON: {
         transform: doc => {
-            return _.pick(doc, ['_id', 'fullName', 'email', 'userType', 'following', 'job', 'ownCourses', 'enrolledCourses']);
+            return _.pick(doc, ['_id', 'fullName', 'email', 'userType', 'following', 'job', 'wishlist', 'ownFreeCourses', 'ownPaidCourses', 'enrolledCourses']);
         }
     },
 });
 
-userSchema.virtual('ownCourses', {
+userSchema.virtual('ownFreeCourses', {
+    ref: 'Course',
+    localField: '_id',
+    foreignField: 'instructorId'
+});
+
+userSchema.virtual('ownPaidCourses', {
     ref: 'Course',
     localField: '_id',
     foreignField: 'instructorId'

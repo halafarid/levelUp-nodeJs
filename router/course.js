@@ -5,23 +5,54 @@ const router = express.Router();
 const CustomError = require('../helpers/customError');
 const authenticationMiddleware = require('../middlewares/authentication');
 
-router.get('/', authenticationMiddleware, async (req, res, next) => {
-    const courses = await Course.find().populate('categoryId').populate('levelId').populate({
-        path: 'instructorId',
-        select: '_id fullName'
-    });
-    res.json(courses);
-});
+router.get('/', 
+    async (req, res, next) => {
+        if (req.query.q) 
+            return authenticationMiddleware;
+        next();
+    }, 
+    async (req, res, next) => {
+        const q = req.query;
+        const pageNo = parseInt(q.pageNo);
+        const size = parseInt(q.size);
 
-router.get('/free', authenticationMiddleware, async (req, res, next) => {
-    const courses = await Course.find({ payment: 0 }).select('_id title duration payment users').populate('categoryId').populate('levelId');
-    res.json(courses);
-});
+        const courses = await Course.find().skip(size * (pageNo - 1)).limit(size).populate('categoryId').populate('levelId').populate({
+            path: 'instructorId',
+            select: '_id fullName'
+        });
+        res.json(courses);
+    }
+);
 
-router.get('/paid', authenticationMiddleware, async (req, res, next) => {
-    const courses = await Course.find({ payment: { $gt: 0 } }).select('_id title duration payment').populate('categoryId').populate('levelId');
-    res.json(courses);
-});
+router.get('/free', 
+    async (req, res, next) => {
+        if (req.query.q) 
+            return authenticationMiddleware;
+        next();
+    },
+    async (req, res, next) => {
+        const q = req.query;
+        const pageNo = parseInt(q.pageNo);
+        const size = parseInt(q.size);
+        const courses = await Course.find({ payment: 0 }).skip(size * (pageNo - 1)).limit(size).select('_id title duration payment users').populate('categoryId').populate('levelId');
+        res.json(courses);
+    }
+);
+
+router.get('/paid', 
+    async (req, res, next) => {
+        if (req.query.q) 
+            return authenticationMiddleware;
+        next();
+    },
+    async (req, res, next) => {
+        const q = req.query;
+        const pageNo = parseInt(q.pageNo);
+        const size = parseInt(q.size);
+        const courses = await Course.find({ payment: { $gt: 0 } }).skip(size * (pageNo - 1)).limit(size).select('_id title duration payment').populate('categoryId').populate('levelId');
+        res.json(courses);
+    }
+);
 
 router.get('/:id', authenticationMiddleware, async (req, res, next) => {
     const { id } = req.params;

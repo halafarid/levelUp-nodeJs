@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Course = require('../models/course');
 const express = require('express');
 const router = express.Router();
 const CustomError = require('../helpers/customError');
@@ -15,8 +16,23 @@ let validations = [
 ];
 
 router.get('/', async (req, res, next) => {
-    const users = await User.find().populate('ownCourses');
+    const users = await User.find().populate('ownFreeCourses').populate('ownPaidCourses');
     res.json(users);
+});
+
+router.get('/instructors', 
+    async (req, res, next) => {
+        if (req.query.q) 
+            return authenticationMiddleware;
+        next();
+    },
+    async (req, res, next) => {
+        const q = req.query;
+        const pageNo = parseInt(q.pageNo);
+        const size = parseInt(q.size);
+
+        const users = await User.find({ userType: 'instructor' }).skip(size * (pageNo - 1)).limit(size).select('_id fullName job');
+        res.json(users);
 });
 
 router.patch('/:id', authenticationMiddleware, authorizationMiddleware, async (req, res, next) => {
@@ -54,30 +70,71 @@ router.post('/login', async (req, res, next) => {
     const user = await User.findOne({ email });
     if (!user) throw CustomError(404, 'Sorry, Email or Password is incorrect!');
 
-    if(user.userType!==userType) throw CustomError(404, `Sorry, you are not a ${userType}`);
+    if(user.userType !== userType) throw CustomError(404, `Sorry, you are not a ${userType}`);
 
     const match = await user.comparePassword(password);
     if (!match) throw CustomError(404, 'Sorry, Email or Password is incorrect!');
-
-
 
     const token = await user.generateToken();
     res.json({ user, token });
 });
 
+router.get('/profile/free', 
+    authenticationMiddleware,
+    async (req, res, next) => {
+        const q = req.query;
+        const pageNo = parseInt(q.pageNo);
+        const size = parseInt(q.size);
+
+        const currentUser = await User.findById(req.user._id).populate({
+            path: 'ownFreeCourses',
+            select: '_id title duration payment levelId',
+            match: { payment: 0 },
+            options: {
+                skip: size * (pageNo - 1),
+                limit: size
+            }
+        });
+        res.send(currentUser.ownFreeCourses);
+    }
+);
+
+router.get('/profile/paid', 
+    authenticationMiddleware,
+    async (req, res, next) => {
+        const q = req.query;
+        const pageNo = parseInt(q.pageNo);
+        const size = parseInt(q.size);
+
+        const currentUser = await User.findById(req.user._id).populate({
+            path: 'ownPaidCourses',
+            select: '_id title duration payment levelId',
+            match: { payment: { $gt: 0 } },
+            options: {
+                skip: size * (pageNo - 1),
+                limit: size
+            }
+        });
+        res.send(currentUser.ownPaidCourses);
+    }
+);
+
 router.get('/profile/:id', authenticationMiddleware, async (req, res, next) => {
-    const user = await User.findById(req.params.id).populate({
-        path: 'ownCourses',
-        select: '_id title duration payment'
+    const user = await User.findById(req.params.id)
+    .populate({
+        path: 'ownFreeCourses',
+        select: '_id title duration payment',
+        match: { payment: 0 }
+    }).populate({
+        path: 'ownPaidCourses',
+        select: '_id title duration payment',
+        match: { payment: {$gt: 0 }}
     });
     res.send(user);
 });
 
 router.get('/profile', authenticationMiddleware, async (req, res, next) => {
-    const currentUser = await User.findById(req.user._id).populate({
-        path: 'ownCourses',
-        select: '_id title duration payment levelId'
-    });
+    const currentUser = await User.findById(req.user._id);
     res.send(currentUser);
 });
 
@@ -106,9 +163,25 @@ router.get('/followers', authenticationMiddleware, async (req, res, next) => {
 // Buy course
 router.post('/payments/:cid', authenticationMiddleware, async (req, res, next) => {
     const { cid } = req.params;
-    if (!req.user.enrolledCourses.some(userID => userID.toString() === cid))
+    if (!req.user.enrolledCourses.some(id => id.toString() === cid)) {
         await User.updateOne( {_id: req.user._id}, { $push: { enrolledCourses: cid } });
-    res.json('You enrolled in this course');
+        await Course.updateOne( {_id: cid}, { $inc: { users: 1 } } );
+        res.json('You enrolled in this course');
+    }
+});
+
+router.get('/wishlist', authenticationMiddleware, async (req, res, next) => {
+    const wishlist = await User.findById(req.user._id).select('wishlist');
+    res.send(wishlist);
+});
+
+router.post('/wishlist/:cid', authenticationMiddleware, async (req, res, next) => {
+    const { cid } = req.params;
+    if (!req.user.wishlist.some(id => id.toString() === cid))
+        await User.updateOne( {_id: req.user._id}, { $push: { wishlist: cid } });
+    else
+        await User.updateOne( {_id: req.user._id},  { $pull: { wishlist: cid } });
+    res.json(cid);
 });
 
 module.exports = router;
