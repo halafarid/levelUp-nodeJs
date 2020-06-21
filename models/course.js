@@ -49,12 +49,16 @@ const courseSchema = new mongoose.Schema({
             }
         }
     ],
-    reviews: []
+    reviews: [],
+    users: {
+        type: Number,
+        default: 0
+    }
 }, {
     timestamps: true,
     toJSON: {
         transform: doc => {
-            return _.pick(doc, ['_id', 'title', 'description', 'duration', 'payment', 'features', 'categoryId', 'levelId', 'materials', 'reviews', 'instructorId' ]);
+            return _.pick(doc, ['_id', 'title', 'description', 'duration', 'payment', 'users', 'features', 'categoryId', 'levelId', 'materials', 'reviews', 'instructorId' ]);
         }
     },
 });

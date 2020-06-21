@@ -14,7 +14,7 @@ router.get('/', authenticationMiddleware, async (req, res, next) => {
 });
 
 router.get('/free', authenticationMiddleware, async (req, res, next) => {
-    const courses = await Course.find({ payment: 0 }).select('_id title duration payment').populate('categoryId').populate('levelId');
+    const courses = await Course.find({ payment: 0 }).select('_id title duration payment users').populate('categoryId').populate('levelId');
     res.json(courses);
 });
 
@@ -57,6 +57,12 @@ router.delete('/:id', authenticationMiddleware, async (req, res, next) => {
     else
         throw CustomError(401, 'You can\'t delete this course because users is enrolled in');
     res.json(course);
+});
+
+router.get('/:id/reviews', authenticationMiddleware, async (req, res, next) => {
+    const { id } = req.params;
+    const course = await Course.findById(id);
+    res.json(course.reviews);
 });
 
 router.post('/:id/reviews', authenticationMiddleware, async (req, res, next) => {
