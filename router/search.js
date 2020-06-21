@@ -22,4 +22,12 @@ router.get('/jobs', authenticationMiddleware, async (req, res, next) => {
     res.json(users);
 });
 
+// Global Search
+router.get('/', authenticationMiddleware, async (req, res, next) => {
+    const users = await User.find({ userType:'instructor' }).select('_id fullName job');
+    const courses = await Course.find().select('_id title');
+
+    res.json({users,courses});
+});
+
 module.exports = router;
