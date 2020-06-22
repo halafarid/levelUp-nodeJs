@@ -25,33 +25,25 @@ router.get('/',
 );
 
 router.get('/free', 
-    async (req, res, next) => {
-        if (req.query.q) 
-            return authenticationMiddleware;
-        next();
-    },
+    authenticationMiddleware,
     async (req, res, next) => {
         const q = req.query;
         const pageNo = parseInt(q.pageNo);
         const size = parseInt(q.size);
-        const courses = await Course.find({ payment: 0 }).skip(size * (pageNo - 1)).limit(size).select('_id title duration materials').populate('categoryId').populate('levelId');
-        const totalCourses = await Course.find({ payment: 0 }).count();
+        const courses = await Course.find({ $and: [ { payment: 0 }, { instructorId: {$ne: req.user._id} } ] }).skip(size * (pageNo - 1)).limit(size).select('_id title duration materials instructorId').populate('categoryId').populate('levelId');
+        const totalCourses = await Course.find({ $and: [ { payment: 0 }, { instructorId: {$ne: req.user._id} } ] }).count();
         res.json({courses, totalCourses});
     }
 );
 
 router.get('/paid', 
-    async (req, res, next) => {
-        if (req.query.q) 
-            return authenticationMiddleware;
-        next();
-    },
+    authenticationMiddleware,
     async (req, res, next) => {
         const q = req.query;
         const pageNo = parseInt(q.pageNo);
         const size = parseInt(q.size);
-        const courses = await Course.find({ payment: { $gt: 0 } }).skip(size * (pageNo - 1)).limit(size).select('_id title duration payment materials').populate('categoryId').populate('levelId');
-        const totalCourses = await Course.find({ payment: { $gt: 0 } }).count();
+        const courses = await Course.find({ $and: [ { payment: { $gt: 0 } }, { instructorId: {$ne: req.user._id} } ] }).skip(size * (pageNo - 1)).limit(size).select('_id title duration payment materials instructorId').populate('categoryId').populate('levelId');
+        const totalCourses = await Course.find({ $and: [ { payment: { $gt: 0 } }, { instructorId: {$ne: req.user._id} } ] }).count();
         res.json({courses, totalCourses});
     }
 );
@@ -106,9 +98,10 @@ router.get('/:id/reviews', authenticationMiddleware, async (req, res, next) => {
 
 router.post('/:id/reviews', authenticationMiddleware, async (req, res, next) => {
     const { id } = req.params;
-    const { userId, title, rating} = req.body
+    const { userId, title, rating } = req.body
     const course = await Course.findById(id);
-    await Course.updateOne( {userId: req.user._id},  { $push: { reviews: { userId, title, rating} } });
+    await Course.update( { userId: req.user._id }, { $push: { reviews: { userId, title, rating } } });
+
     res.json(course);
 });
 

@@ -180,7 +180,6 @@ router.post('/payments/:cid', authenticationMiddleware, async (req, res, next) =
     const { cid } = req.params;
     if (!req.user.enrolledCourses.some(id => id.toString() === cid)) {
         await User.updateOne( {_id: req.user._id}, { $push: { enrolledCourses: cid } });
-        await Course.updateOne( {_id: cid}, { $inc: { users: 1 } } );
         res.json('You enrolled in this course');
     }
 });
