@@ -36,6 +36,10 @@ const courseSchema = new mongoose.Schema({
         ref: 'Level',
         required: true
     },
+    progress: {
+        type: Number,
+        default: 0
+    },
     materials: [
         {
             title: {
@@ -49,16 +53,12 @@ const courseSchema = new mongoose.Schema({
             }
         }
     ],
-    reviews: [],
-    users: {
-        type: Number,
-        default: 0
-    }
+    reviews: []
 }, {
     timestamps: true,
     toJSON: {
         transform: doc => {
-            return _.pick(doc, ['_id', 'title', 'description', 'duration', 'payment', 'users', 'features', 'categoryId', 'levelId', 'materials', 'reviews', 'instructorId' ]);
+            return _.pick(doc, ['_id', 'title', 'description', 'duration', 'payment', 'users', 'features', 'progress', 'categoryId', 'levelId', 'materials', 'reviews', 'instructorId' ]);
         }
     },
 });

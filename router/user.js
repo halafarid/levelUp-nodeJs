@@ -188,7 +188,12 @@ router.post('/payments/:cid', authenticationMiddleware, async (req, res, next) =
 router.get('/wishlist', authenticationMiddleware, async (req, res, next) => {
     const wishlist = await User.findById(req.user._id).select('wishlist').populate({
         path: 'wishlist',
-        select: '_id title duration payment instructorId'
+        select: '_id title duration payment instructorId',
+        populate: {
+            path: 'instructorId',
+            model: 'User',
+            select: 'fullName'
+        }
     });
     res.send(wishlist);
 });

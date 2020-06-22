@@ -35,7 +35,8 @@ router.get('/free',
         const pageNo = parseInt(q.pageNo);
         const size = parseInt(q.size);
         const courses = await Course.find({ payment: 0 }).skip(size * (pageNo - 1)).limit(size).select('_id title duration materials').populate('categoryId').populate('levelId');
-        res.json(courses);
+        const totalCourses = await Course.find({ payment: 0 }).count();
+        res.json({courses, totalCourses});
     }
 );
 
@@ -50,7 +51,8 @@ router.get('/paid',
         const pageNo = parseInt(q.pageNo);
         const size = parseInt(q.size);
         const courses = await Course.find({ payment: { $gt: 0 } }).skip(size * (pageNo - 1)).limit(size).select('_id title duration payment materials').populate('categoryId').populate('levelId');
-        res.json(courses);
+        const totalCourses = await Course.find({ payment: { $gt: 0 } }).count();
+        res.json({courses, totalCourses});
     }
 );
 
@@ -90,6 +92,12 @@ router.delete('/:id', authenticationMiddleware, async (req, res, next) => {
     res.json(course);
 });
 
+router.get('/:id/materials', authenticationMiddleware, async (req, res, next) => {
+    const { id } = req.params;
+    const course = await Course.findById(id);
+    res.json(course.materials);
+});
+
 router.get('/:id/reviews', authenticationMiddleware, async (req, res, next) => {
     const { id } = req.params;
     const course = await Course.findById(id);
@@ -104,11 +112,15 @@ router.post('/:id/reviews', authenticationMiddleware, async (req, res, next) => 
     res.json(course);
 });
 
-router.get('/:id/materials', authenticationMiddleware, async (req, res, next) => {
+router.patch('/:id/progress', authenticationMiddleware, async (req, res, next) => {
     const { id } = req.params;
-    const course = await Course.findById(id);
-    res.json(course.materials);
-});
 
+    const { progress } = req.body;
+    const course = await Course.findByIdAndUpdate(id,
+        { progress },
+        { new: true, omitUndefined: true, runValidators: true }
+    );
+    res.json(course);
+});
 
 module.exports = router;
