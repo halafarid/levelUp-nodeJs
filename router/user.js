@@ -31,8 +31,10 @@ router.get('/instructors',
         const pageNo = parseInt(q.pageNo);
         const size = parseInt(q.size);
 
-        const users = await User.find({ userType: 'instructor' }).skip(size * (pageNo - 1)).limit(size).select('_id fullName job');
-        res.json(users);
+        const instructors = await User.find({ userType: 'instructor' }).skip(size * (pageNo - 1)).limit(size).select('_id fullName job');
+        const totalInstructors = await User.find({ userType: 'instructor' }).count();
+
+        res.json({ instructors, totalInstructors });
 });
 
 router.patch('/:id', authenticationMiddleware, authorizationMiddleware, async (req, res, next) => {
@@ -112,7 +114,7 @@ router.get('/profile/paid',
 
         const currentUser = await User.findById(req.user._id).populate({
             path: 'ownPaidCourses',
-            select: '_id title duration payment materials',
+            select: '_id title duration payment materials progress',
             match: { payment: { $gt: 0 } },
             options: {
                 skip: size * (pageNo - 1),
@@ -144,7 +146,7 @@ router.get('/profile/:id', authenticationMiddleware, async (req, res, next) => {
 router.get('/profile', authenticationMiddleware, async (req, res, next) => {
     const currentUser = await User.findById(req.user._id).populate({
         path: 'enrolledCourses',
-        select: '_id title duration payment materials levelId',
+        select: '_id title duration payment materials levelId progress',
         populate: {
             path: 'levelId',
             model: 'Level'

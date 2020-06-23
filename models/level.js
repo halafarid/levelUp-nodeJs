@@ -11,12 +11,12 @@ const levelSchema = new mongoose.Schema({
     timestamps: true,
     toJSON: {
         transform: doc => {
-            return _.pick(doc, ['_id', 'title', 'course']);
+            return _.pick(doc, ['_id', 'title', 'courses']);
         }
     },
 });
 
-levelSchema.virtual('course', {
+levelSchema.virtual('courses', {
     ref: 'Course',
     localField: '_id',
     foreignField: 'levelId'

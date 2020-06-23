@@ -66,9 +66,9 @@ router.post('/', authenticationMiddleware, async (req, res, next) => {
 router.patch('/:id', authenticationMiddleware, async (req, res, next) => {
     const { id } = req.params;
 
-    const { title, description, duration, payment, features, categoryId, levelId, materials } = req.body;
+    const { title, description, duration, payment, features, categoryId, levelId, materials,progress } = req.body;
     const course = await Course.findByIdAndUpdate(id,
-        { title, description, duration, payment, features, categoryId, levelId, materials },
+        { title, description, duration, payment, features, categoryId, levelId, materials,progress },
         { new: true, omitUndefined: true, runValidators: true }
     );
     res.json(course);
@@ -82,6 +82,13 @@ router.delete('/:id', authenticationMiddleware, async (req, res, next) => {
     else
         throw CustomError(401, 'You can\'t delete this course because users is enrolled in');
     res.json(course);
+});
+
+router.get('/:id/materials/:materialId', authenticationMiddleware, async (req, res, next) => {
+    const { id, materialId } = req.params;
+    const course = await Course.findById(id);
+    const material = course.materials;
+    res.json(material);
 });
 
 router.get('/:id/materials', authenticationMiddleware, async (req, res, next) => {

@@ -50,6 +50,10 @@ const courseSchema = new mongoose.Schema({
             link: {
                 type: String,
                 required: true
+            },
+            isOpen: {
+                type: Boolean,
+                default: false
             }
         }
     ],

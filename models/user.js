@@ -75,11 +75,6 @@ sign({userId: ''}, jwtSecret)
     .then( token => console.log(token) )
     .catch( err => next() );
 
-// verify('token', jwtSecret)
-//     .then( req => req.user = user)
-//     .catch( err => console.log(err) );
-
-
 // To Encrypt the password
 userSchema.pre('save', async function() {
     if (this.isModified('password'))
@@ -100,7 +95,6 @@ userSchema.methods.generateToken = function() {
 };
 
 userSchema.statics.getCurrentUser = async function(token) {
-    // const payload = jwt.verify(token, jwtSecret);
     const payload = await verify(token, jwtSecret);
     const currentUser = await User.findById(payload.userId);
 
