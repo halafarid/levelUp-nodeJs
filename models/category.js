@@ -13,12 +13,15 @@ const categorySchema = new mongoose.Schema({
     toJSON: {
         virtuals: true,
         transform: doc => {
-            return _.pick(doc, ['_id', 'title', 'course' ]);
+            return _.pick(doc, ['_id', 'title', 'courses' ]);
         }
     },
+    toObject: {
+        virtuals: true
+    }
 });
 
-categorySchema.virtual('course', {
+categorySchema.virtual('courses', {
     ref: 'Course',
     localField: '_id',
     foreignField: 'categoryId'
